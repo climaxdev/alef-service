@@ -1,0 +1,46 @@
+PUT _ingest/pipeline/aat-pipeline
+Content-Type: application/json
+Accept: application/json
+
+{
+  "description": "_description",
+  "processors": [
+    {
+      "html_strip": {
+        "field": "body.prompt",
+        "target_field": "body.prompt_plain",
+        "ignore_missing": true
+      }
+    },
+    {
+      "script": {
+        "source": "if (ctx.containsKey('body') && ctx.body.containsKey('prompt_plain')) { ctx.body.prompt_plain = ctx.body.prompt_plain.replace('\n','').trim();}",
+        "lang": "painless"
+      }
+    },
+    {
+      "script": {
+        "source": "if (ctx.containsKey('body') && ctx.body.containsKey('prompt_plain')) { ctx.body.prompt_plain = / +/.matcher(ctx.body.prompt_plain).replaceAll(' ');}",
+        "lang": "painless"
+      }
+    },
+    {
+      "script": {
+        "source": "if (ctx.containsKey('organisations')) { ctx._organisation = ctx.organisations[0];}",
+        "lang": "painless"
+      }
+    },
+    {
+      "script": {
+        "source": "if (ctx.containsKey('class')) { String c = ctx.class; if(c.contains('com.alefeducation.assessmentquestion')){ctx._kind = 'questions';} else if(c.contains('com.alefeducation.assessmentlibrary')){ctx._kind = 'pools';} else if(c.contains('com.alefeducation.assessmentworkspace')){ctx._kind = 'workspaces';}}",
+        "lang": "painless"
+      }
+    },
+    {
+      "script": {
+        "source": "if (ctx.containsKey('_organisation') && ctx.containsKey('_kind')) { ctx._suggester_context = ctx._organisation + '-' + ctx._kind;}",
+        "lang": "painless"
+      }
+    }
+  ]
+}

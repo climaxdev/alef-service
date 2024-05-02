@@ -1,0 +1,71 @@
+crnk:
+  path-prefix: /api
+  default-page-limit: 20
+  allow-unknown-attributes: true
+
+server:
+  port: 9090
+
+spring:
+  elasticsearch:
+    uris: ${elasticsearch_uris:http://localhost:9200}
+    evolution:
+      defaultContentType: application/json
+  cloud:
+    stream:
+      bindings:
+        poolChangelogConsumer-in-0:
+          binder: authoringKafka
+          group: poolChangelogGroup
+          destination: ${kafka_topic_authoring_pool_changelog:alef.authoring.assessment.pool.changelog}
+        questionChangelogConsumer-in-0:
+          binder: authoringKafka
+          group: questionChangelogGroup
+          destination: ${kafka_topic_authoring_question_changelog:alef.authoring.assessment.question.changelog}
+        workspaceChangelogConsumer-in-0:
+          binder: authoringKafka
+          group: workspaceChangelogGroup
+          destination: ${kafka_topic_authoring_workspace_changelog:alef.authoring.assessment.workspace.changelog}
+      binders:
+        authoringKafka:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      autoCreateTopics: ${authoring_kafka_autocreatetopics:false}
+                      brokers: ${authoring_kafka_brokers:localhost:29092}
+                      replicationFactor: ${authoring_kafka_replication_factor:1}
+    function:
+      definition: poolChangelogConsumer; workspaceChangelogConsumer; questionChangelogConsumer
+
+management:
+  server:
+    port: ${actuator_management_port:8888}
+  endpoints:
+    web:
+      exposure:
+        include: ${actuator_exposure_include:info,health}
+  endpoint:
+    health:
+      show-details: always
+alef-authoring-authz:
+  pollingIntervalInSeconds: ${authz_polling_interval_seconds:30}
+  endpoints:
+    user_memberships: ${authz_user_memberships:null}
+    role_permissions: ${authz_role_permissions:null}
+  dataFile: null
+  enabled: ${authz_enabled:false}
+platform:
+  name: authoring
+  spaces:
+    - name: aat
+      kinds:
+        - name: questions
+          index: ${authoring-aat-questions-index:aat}
+        - name: pools
+          index: ${authoring-aat-pools-index:aat}
+        - name: workspaces
+          index: ${authoring-aat-workspaces-index:aat}

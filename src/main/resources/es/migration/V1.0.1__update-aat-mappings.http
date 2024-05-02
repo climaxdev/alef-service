@@ -1,0 +1,70 @@
+PUT aat/_mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "properties": {
+    "code": {
+      "type": "text",
+      "analyzer": "standard",
+      "search_analyzer": "standard",
+      "fields": {
+        "completion": {
+          "type": "completion",
+          "analyzer": "keyword_completion_analyzer",
+          "search_analyzer": "standard",
+          "contexts": [
+            {
+              "name": "_suggester_context",
+              "type": "category",
+              "path": "_suggester_context"
+            }
+          ]
+        }
+      }
+    },
+    "body": {
+      "properties": {
+        "prompt": {
+          "type": "text"
+        },
+        "prompt_plain": {
+          "type": "text",
+          "fields": {
+            "completion": {
+              "type": "completion",
+              "analyzer": "text_completion_analyzer",
+              "search_analyzer": "standard",
+              "max_input_length": 50,
+              "contexts": [
+                {
+                  "name": "_suggester_context",
+                  "type": "category",
+                  "path": "_suggester_context"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "name": {
+      "type": "text",
+      "fields": {
+        "completion": {
+          "type": "completion",
+          "analyzer": "text_completion_analyzer",
+          "search_analyzer": "standard",
+          "max_input_length": 50,
+          "contexts": [
+            {
+              "name": "_suggester_context",
+              "type": "category",
+              "path": "_suggester_context"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

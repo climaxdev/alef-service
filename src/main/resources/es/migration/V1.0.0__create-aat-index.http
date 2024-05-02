@@ -1,0 +1,44 @@
+PUT aat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "settings": {
+    "index": {
+      "number_of_shards": "1",
+      "default_pipeline": "aat-pipeline",
+      "analysis": {
+        "filter": {
+          "keyword_autocomplete_filter": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 50
+          },
+          "text_autocomplete_filter": {
+            "type": "shingle",
+            "min_shingle_size": 2,
+            "max_shingle_size": 3
+          }
+        },
+        "analyzer": {
+          "keyword_completion_analyzer": {
+            "type": "custom",
+            "filter": [
+              "lowercase",
+              "keyword_autocomplete_filter"
+            ],
+            "tokenizer": "keyword"
+          },
+          "text_completion_analyzer": {
+            "filter": [
+              "lowercase",
+              "text_autocomplete_filter"
+            ],
+            "tokenizer": "standard"
+          }
+        }
+      },
+      "number_of_replicas": "1"
+    }
+  }
+}
